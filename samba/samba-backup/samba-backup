@@ -1,0 +1,79 @@
+#!/bin/bash
+
+## samba-backup: A configurable tool to mount a samba share and back up files in one ##
+###                  command which can be automated in cron                       ####
+
+
+#   This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+
+ #   This program is distributed in the hope that it will be useful,
+ #   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ #   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ #   GNU General Public License for more details.
+
+#################  Copyright Harry Allerston 2013  ##################
+
+
+# Check for and install dependencies
+
+clear
+
+if which cifscreds>/dev/null; then
+echo " "
+else
+echo "....There seem to be some unmet dependencies... please enter your password..."
+    echo " This only needs doing once! "
+    sleep 4
+    clear
+    sudo apt-get install -y -qq cifs-utils
+fi
+
+clear
+
+clear
+
+### read watchlist (make sure it points to watchlist location ####
+
+
+watched=$(head watchlist)
+
+
+#checks that /mnt/samba is populated, and mounts the share if not
+
+shopt -s nullglob
+shopt -s dotglob # To include hidden files
+
+files=(/mnt/samba*)
+
+if [ ${#files[@]} -gt 0 ]
+then 
+   #copy watched folders to samba share
+	clear	
+	cp -v $watched /mnt/samba
+	echo "Files successfully backed up"
+	echo " "
+	
+else
+    #query server information and mount to /mnt/samba
+
+	clear 
+	echo "Path to server?"
+	read SERVER
+	clear
+	clear
+	echo "Username?"
+	read USER
+	clear
+	echo "Password?"
+	read PWD
+	clear
+	sudo mount -t cifs -o username=$USER,password=$PWD $SERVER  /mnt/samba
+	clear	
+	cp -v $watched /mnt/samba
+	echo "Files successfully backed up"
+	echo " "
+fi
+
